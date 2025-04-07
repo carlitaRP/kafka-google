@@ -1,0 +1,116 @@
+version: '3.9'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.2.1
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.2.1
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_DB: defaultdb
+      POSTGRES_USER: avnadmin
+      POSTGRES_PASSWORD: "AVNS_-OKTlUSsFpRD_i04C5-"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  producer-mongo:
+    build:
+      context: .
+      dockerfile: Dockerfile.producer-mongo
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BROKER=kafka:9092
+
+  consumer-mongo:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer-mongo
+    depends_on:
+      - kafka
+      - mongo
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - MONGO_URI=mongodb+srv://carlitarp1026:100702@people.3i7w81k.mongodb.net/?retryWrites=true&w=majority&appName=people
+
+  producer-pg:
+    build:
+      context: .
+      dockerfile: Dockerfile.producer-pg
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BROKER=kafka:9092
+
+  consumer-pg:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer-pg
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - POSTGRES_HOST=pg-359cfab6-estudiantes-bb9b.h.aivencloud.com
+      - POSTGRES_DB=defaultdb 
+      - POSTGRES_USER=avnadmin
+      - POSTGRES_PASSWORD=AVNS_-OKTlUSsFpRD_i04C5-
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - producer-mongo
+      - producer-pg
+    environment:
+      - KAFKA_BROKER=kafka:9092
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    volumes:
+      - ./:/app  
+      - ./.streamlit/secrets.toml:/app/.streamlit/secrets.toml:ro 
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+      - consumer-mongo
+      - consumer-pg
+
+volumes:
+  pg_data:
+  mongo_data:

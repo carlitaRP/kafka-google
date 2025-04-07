@@ -1,0 +1,9 @@
+kafka-python
+pymongo
+psycopg2
+pandas
+requests
+streamlit
+uvicorn
+fastapi
+sqlalchemy
