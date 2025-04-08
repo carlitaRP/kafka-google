@@ -98,7 +98,8 @@ if st.button("🚀 **Consulta resultados**"):
     get_spark_results(url_results)
 st.markdown("______")
 
-API_URL = "http://api:8000"
+##API_URL = "http://api:8000"
+API_URL = "http://34.41.218.148:8000"
 
 st.title("🏁 **Envio de informacion a MongoDB y PostgreSQL**")
 
