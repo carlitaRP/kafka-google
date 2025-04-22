@@ -163,7 +163,7 @@ if st.sidebar.button("Obtener resultados de PostgreSQL"):
     
     # Ejecutar la consulta en PostgreSQL
     # df = conn.query('SELECT * FROM motorcycle;', ttl="10m")
-    df = conn.query('SELECT * FROM motorcycle;')
+    df = conn.query('SELECT * FROM motorcycle;', ttl="0s")
     
     # Agrupar los resultados por marca
     grouped_by_brand = {}
