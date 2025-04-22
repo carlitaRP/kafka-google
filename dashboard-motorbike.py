@@ -15,7 +15,7 @@ client = init_connection()
 # Extraer datos del cvs
 # Utiliza st.cache_data para volver a ejecutar 
 # solo cuando cambia la consulta o cada 10 minutos.
-@st.cache_data(ttl=600)
+# @st.cache_data(ttl=600)
 def get_data():
     db = client.motorcycle
     items = db.motorcycle.find()
